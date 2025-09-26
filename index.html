@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>MozVendas.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f4f6;color:#333;line-height:1.5;}
+a{text-decoration:none;color:inherit;}
+h2.section-title{margin:20px 5%;font-size:1.4rem;color:#ff4500;font-weight:700;}
+
+/* HEADER */
+header{background:#ff4500;color:#fff;padding:8px 15px;position:sticky;top:0;z-index:1000;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;}
+header h1{font-size:1.5rem;margin-bottom:6px;}
+.menu-btn{position:absolute;left:20px;top:10px;font-size:2rem;cursor:pointer;display:none;}
+
+/* NAV */
+nav ul { list-style:none; display:flex; flex-wrap:wrap; gap:15px; padding:0; margin:0; width:100%; justify-content:center;}
+nav li { position:relative; }
+nav a { display:block; padding:6px 10px; color:#fff; font-weight:600; border-radius:6px; transition:.3s; }
+nav a:hover { background:rgba(255,255,255,.2); }
+
+.subcategorias {display:none;position:absolute;top:100%;left:0;background:#fff;color:#ff4500;
+  min-width:140px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);flex-direction:column;z-index:1000;}
+.subcategorias button {display:block;width:100%;padding:6px 12px;border:none;background:none;text-align:left;cursor:pointer;transition:.3s;}
+.subcategorias button:hover { background:#ff4500; color:#fff; }
+li:hover > .subcategorias { display:flex; }
+
+/* PESQUISA */
+.pesquisa-wrap{position:relative;width:90%;max-width:350px;margin:8px auto;}
+#pesquisa{width:100%;padding:10px 38px 10px 14px;border-radius:8px;border:1px solid #ccc;font-size:1rem;}
+.pesquisa-wrap::after{content:"🔍";position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;}
+
+/* BANNER */
+.banner{position:relative;height:220px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;}
+.banner img{position:absolute;width:100%;height:100%;object-fit:cover;transition:opacity 1s;}
+.banner-text{position:relative;z-index:1;font-size:1.8rem;font-weight:700;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.6);}
+
+/* CARROSSEL */
+.carousel{position:relative;margin:0 5% 25px;overflow:hidden;}
+.carousel-track{display:flex;gap:15px;overflow-x:auto;scroll-behavior:smooth;padding-bottom:10px;}
+.carousel-track::-webkit-scrollbar{height:6px;}
+.carousel-track::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px;}
+.arrow-btn{position:absolute;top:50%;transform:translateY(-50%);background:#fff;border:none;font-size:24px;cursor:pointer;padding:4px 8px;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.2);}
+.arrow-btn.left{left:-12px;} .arrow-btn.right{right:-12px;}
+
+/* PRODUTO CARD */
+.produto{background:#fff;border-radius:12px;flex:0 0 150px;padding:10px;cursor:pointer;transition:.3s;box-shadow:0 2px 6px rgba(0,0,0,.1);text-align:center;position:relative;}
+.produto img{width:100%;height:120px;object-fit:contain;border-radius:8px;transition:transform .3s;}
+.produto img:hover{transform:scale(1.1);}
+.produto p{margin:6px 0;}
+.preco{color:#ff4500;font-weight:700;font-size:1rem;}
+.carrinho{position:absolute;top:6px;right:6px;font-size:18px;color:#ff4500;cursor:pointer;transition:.3s;}
+.carrinho.ativo{color:#e60073;transform:scale(1.2);}
+
+/* MODAL */
+#modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);justify-content:center;align-items:center;z-index:1000;}
+#modal-content{background:#fff;padding:20px;border-radius:12px;max-width:90vw;max-height:90vh;text-align:center;position:relative;overflow-y:auto;}
+.close-btn{position:absolute;top:10px;right:12px;font-size:24px;cursor:pointer;font-weight:bold;}
+.imagem-principal img{max-width:100%;max-height:250px;object-fit:contain;border-radius:8px;transition:transform .3s;}
+.imagem-principal img.zoomed{transform:scale(1.5);}
+.thumbnails{display:flex;justify-content:center;gap:8px;margin:12px 0;flex-wrap:wrap;}
+.thumbnails img{width:50px;height:50px;object-fit:cover;cursor:pointer;border:2px solid transparent;border-radius:6px;transition:.3s;}
+.thumbnails img.active{border-color:#ff4500;}
+.descricao{text-align:left;margin-top:12px;}
+.descricao h3{margin:6px 0;font-size:14px;border-bottom:1px solid #eee;}
+#modal-whats{display:inline-block;margin-top:10px;background:#25D366;color:#fff;padding:10px 16px;border-radius:8px;font-weight:600;text-decoration:none;}
+
+/* CARRINHO */
+#carrinho-btn{position:fixed;right:20px;bottom:20px;background:#ff4500;color:#fff;padding:12px 18px;border:none;border-radius:50px;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,.3);z-index:1000;}
+#carrinho-btn span{background:#fff;color:#ff4500;font-weight:700;padding:2px 6px;border-radius:50%;margin-left:5px;font-size:0.9rem;}
+#carrinho{position:fixed;right:20px;bottom:70px;width:280px;background:#fff;border-radius:12px;padding:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);max-height:400px;overflow-y:auto;display:none;}
+#carrinho h3{margin-bottom:8px;}
+.item-carrinho{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.item-carrinho button{background:#ff4500;color:#fff;border:none;padding:2px 6px;border-radius:4px;cursor:pointer;font-size:14px;}
+#total{font-weight:700;margin-top:6px;text-align:right;color:#ff4500;}
+#finalizar{margin-top:8px;width:100%;padding:8px 0;background:#25D366;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;}
+
+
+
+
+/* Todos os produtos */
+#todos-produtos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 10px 5%;
+}
+
+#todos-produtos .produto {
+  flex: 1 1 calc(50% - 15px); /* 2 colunas no mobile */
+  max-width: calc(50% - 15px);
+}
+/* RESPONSIVO */
+@media(max-width:768px){
+  .menu-btn{display:block;}
+  nav ul{flex-direction:column; display:none;}
+  nav ul.open{display:flex;}
+  nav li{width:100%;}
+  .subcategorias {position:relative; top:0; left:0; display:none; flex-wrap:wrap; gap:5px;}
+  .subcategorias button{width:48%;}
+  li.open > .subcategorias{display:flex;}
+  #carrinho{width:90%;right:5%;bottom:70px;}
+  #carrinho-btn{right:5%;bottom:15px;}
+}
+
+/* Todos os Produtos */
+#todos-produtos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 10px 5%;
+}
+
+/* Cada produto */
+#todos-produtos .produto {
+  flex: 1 1 calc(25% - 15px); /* 4 colunas por padrão em telas grandes */
+  max-width: calc(25% - 15px);
+}
+
+/* Tablet médio */
+@media(max-width:1024px){
+  #todos-produtos .produto {
+    flex: 1 1 calc(33.33% - 15px); /* 3 colunas */
+    max-width: calc(33.33% - 15px);
+  }
+}
+
+/* Celular comum */
+@media(max-width:768px){
+  #todos-produtos .produto {
+    flex: 1 1 calc(50% - 10px); /* 2 colunas */
+    max-width: calc(50% - 10px);
+  }
+}
+
+/* Celular pequeno */
+@media(max-width:480px){
+  #todos-produtos .produto {
+    flex: 1 1 100%; /* 1 coluna */
+    max-width: 100%;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="menu-btn" id="menu-btn">☰</div>
+  <h1>MozVendas.com</h1>
+  <div class="pesquisa-wrap">
+    <input type="text" id="pesquisa" placeholder="Pesquisar nome, categoria ou subcategoria">
+    <div id="sugestoes" style="position:absolute;top:100%;left:0;width:100%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);border-radius:6px;max-height:150px;overflow-y:auto;display:none;z-index:1000;"></div>
+  </div>
+  
+  
+  <nav>
+    <ul id="menu-categorias-ul"></ul>
+  </nav>
+</header>
+
+<div class="banner" id="banner">
+  <img id="banner-img" src="banner/Bolsa.jpg" alt="Banner">
+  <div class="banner-text" id="banner-text">Promoções Especiais</div>
+</div>
+
+<h2 class="section-title">✨ Novidades</h2>
+<div class="carousel">
+  <button class="arrow-btn left" onclick="scrollCarousel('novidades',-1)">‹</button>
+  <div class="carousel-track" id="novidades"></div>
+  <button class="arrow-btn right" onclick="scrollCarousel('novidades',1)">›</button>
+</div>
+
+<h2 class="section-title">🔥 Mais Comprados</h2>
+<div class="carousel">
+  <button class="arrow-btn left" onclick="scrollCarousel('mais',-1)">‹</button>
+  <div class="carousel-track" id="mais"></div>
+  <button class="arrow-btn right" onclick="scrollCarousel('mais',1)">›</button>
+</div>
+
+<h2 class="section-title">📦 Todos os Produtos</h2>
+<div id="todos-produtos"></div>
+
+<!-- MODAL PRODUTO -->
+<div id="modal">
+  <div id="modal-content">
+    <span class="close-btn">&times;</span>
+    <div class="imagem-principal">
+      <img id="modal-img" src="" alt="">
+    </div>
+    <div class="thumbnails" id="thumbnails"></div>
+    <div class="descricao" id="descricao"></div>
+    <a id="modal-whats" href="#" target="_blank">💬 WhatsApp</a>
+    <button id="add-carrinho" style="margin-top:10px;background:#ff4500;color:#fff;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;">Adicionar ao Carrinho</button>
+  </div>
+</div>
+
+<!-- CARRINHO -->
+<button id="carrinho-btn">🛒 Carrinho <span id="contador-carrinho">0</span></button>
+<div id="carrinho">
+  <h3>Carrinho</h3>
+  <div id="itens-carrinho"></div>
+  <div id="total">Total: 0 MT</div>
+  <button id="finalizar">Finalizar Compra</button>
+</div>
+
+<footer>&copy; 2025 MozVendas - Todos os direitos reservados.</footer>
+
+<script>
+const produtos = [
+  {id:1,nome:"Bolsa Elegante",
+  preco:1500,
+  img:"f/v (1).jpg",
+  imagens:["f/v (2).jpg",
+  "f/v (3).jpg",
+  "f/v (4).jpg",
+  "f/v (5).jpg"],
+  desc:"Bolsa de couro sintético.",categoria:"Moda",subcategorias:["Feminino"],mais:true},
+  {id:2,nome:"Tênis Sport",preco:2000,img:"f/vs (1).jpg",imagens:["f/vs (2).jpg","f/vs (3).jpg","f/vs (4).jpg","f/vs (5).jpg","f/vs (6).jpg"],desc:"Tênis confortável.",categoria:"Moda",subcategorias:["Masculino"],mais:false},
+  {id:3,nome:"Relógio Luxo",preco:3200,img:"f/n (1).jpg",imagens:["f/n (2).jpg","f/n (3).jpg","f/n (4).jpg","f/n (5).jpg"],desc:"Resistente à água.",categoria:"Acessórios",subcategorias:["Masculino"],mais:true},
+
+  {id:4,nome:"Ezequiel",
+  preco:3200,img:"f/b (1).jpg",
+  imagens:["f/b (2).jpg","f/b (3).jpg","f/b (4).jpg","f/b (5).jpg"],
+  desc:"Resistente à água.",categoria:"Acessórios",subcategorias:["Masculino"],mais:true},
+];
+
+
+
+let carrinho = [];
+
+const menuUl = document.getElementById("menu-categorias-ul");
+const todosContainer = document.getElementById("todos-produtos");
+const resultados = document.createElement("div"); 
+resultados.id="resultados"; 
+resultados.style.display="none"; 
+resultados.style.flexWrap="wrap"; 
+resultados.style.gap="15px"; 
+resultados.style.margin="10px 5%"; 
+document.body.insertBefore(resultados,todosContainer);
+
+function criarCard(p){
+  const div = document.createElement("div"); div.className="produto";
+  div.innerHTML=`<img src="${p.img}" alt="${p.nome}"><p>${p.nome}</p><p class="preco">${p.preco} MT</p>`;
+  div.onclick=()=>abrirModal(p);
+  return div;
+}
+
+function preencher(track,lista){ track.innerHTML=""; lista.forEach(p=>track.appendChild(criarCard(p))); }
+
+preencher(document.getElementById("novidades"),produtos.filter(p=>p.mais));
+preencher(document.getElementById("mais"),produtos.filter(p=>p.mais));
+preencher(todosContainer,produtos);
+
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modal-img");
+const thumbnails = document.getElementById("thumbnails");
+const descricaoDiv = document.getElementById("descricao");
+const modalWhats = document.getElementById("modal-whats");
+const addCarrinhoBtn = document.getElementById("add-carrinho");
+let produtoAtual = null;
+
+function abrirModal(p){
+  produtoAtual=p;
+  modal.style.display="flex";
+  modalImg.src=p.imagens[0];
+  descricaoDiv.innerHTML=p.desc;
+  modalWhats.href=`https://wa.me/258865992436?text=${encodeURIComponent("Olá, quero este produto: "+p.nome+" - "+p.preco+" MT")}`;
+  thumbnails.innerHTML="";
+  p.imagens.forEach((src,i)=>{
+    const t=document.createElement("img");
+    t.src=src;
+    if(i===0) t.classList.add("active");
+    t.onclick=()=>{modalImg.src=src; thumbnails.querySelectorAll("img").forEach(im=>im.classList.remove("active")); t.classList.add("active");};
+    thumbnails.appendChild(t);
+  });
+}
+document.querySelector(".close-btn").onclick=()=>modal.style.display="none";
+window.onclick=e=>{if(e.target===modal) modal.style.display="none";};
+
+// Zoom suave ao clicar na imagem
+modalImg.onclick = () => { modalImg.classList.toggle('zoomed'); };
+
+addCarrinhoBtn.onclick=()=>{
+  const item = carrinho.find(c=>c.id===produtoAtual.id);
+  if(item) item.qtd++; else carrinho.push({id:produtoAtual.id,nome:produtoAtual.nome,preco:produtoAtual.preco,qtd:1});
+  atualizarCarrinho();
+};
+
+function atualizarIconeCarrinho() {
+  const contador = document.getElementById("contador-carrinho");
+  const totalItens = carrinho.reduce((acc, item) => acc + item.qtd, 0);
+  contador.textContent = totalItens;
+}
+
+function atualizarCarrinho(){
+  const container = document.getElementById("itens-carrinho");
+  container.innerHTML="";
+  let total = 0;
+  carrinho.forEach((item,i)=>{
+    total += item.preco*item.qtd;
+    const div = document.createElement("div"); div.className="item-carrinho";
+    div.innerHTML=`${item.nome} (${item.qtd}) ${item.preco*item.qtd} MT</span>
+      <button onclick="remover(${i})">✖</button>`;
+    container.appendChild(div);
+  });
+  document.getElementById("total").textContent = `Total: ${total} MT`;
+  atualizarIconeCarrinho(); // atualiza o contador do carrinho
+}
+
+// Remover item do carrinho
+window.remover = i => { 
+  carrinho.splice(i,1); 
+  atualizarCarrinho(); 
+};
+
+// Abrir/Fechar carrinho
+const carrinhoBtn = document.getElementById("carrinho-btn");
+const carrinhoDiv = document.getElementById("carrinho");
+carrinhoBtn.onclick = () => { 
+  carrinhoDiv.style.display = carrinhoDiv.style.display === "block" ? "none" : "block"; 
+};
+
+// Finalizar compra via WhatsApp
+document.getElementById("finalizar").onclick = () => {
+  if(carrinho.length === 0){ alert("Carrinho vazio!"); return; }
+  let mensagem = "Olá, quero comprar:\n";
+  carrinho.forEach(item => { mensagem += `- ${item.nome} x${item.qtd} = ${item.preco*item.qtd} MT\n`; });
+  mensagem += `Total: ${carrinho.reduce((a,b) => a + b.preco*b.qtd, 0)} MT`;
+  window.open("https://wa.me/258865992436?text="+encodeURIComponent(mensagem), "_blank");
+};
+
+// Carrossel
+function autoScrollCarousel(id, distance = 160, interval = 3000) {
+  const track = document.getElementById(id);
+  setInterval(() => {
+    if(track.scrollLeft + track.clientWidth >= track.scrollWidth){
+      // Se chegou no final, volta para o começo
+      track.scrollTo({left:0, behavior:"smooth"});
+    } else {
+      track.scrollBy({left: distance, behavior:"smooth"});
+    }
+  }, interval);
+}
+
+// Ativar rolagem automática
+autoScrollCarousel('novidades', 160, 3000); // 3s por movimento
+autoScrollCarousel('mais', 160, 3000);
+
+
+// Menu Categorias
+const categoriasSet = [...new Set(produtos.map(p=>p.categoria))];
+categoriasSet.forEach(cat=>{
+  const li = document.createElement("li");
+  const a = document.createElement("a"); a.href="#"; a.textContent=cat;
+  const subDiv = document.createElement("div"); subDiv.className="subcategorias";
+  const subsSet = new Set();
+  produtos.forEach(p => { if(p.categoria===cat) (p.subcategorias||[]).forEach(s=>subsSet.add(s)); });
+  subsSet.forEach(sub=>{
+    const btn = document.createElement("button"); btn.textContent=sub;
+    btn.onclick = e => {
+      e.preventDefault(); e.stopPropagation();
+      resultados.style.display="flex"; resultados.innerHTML="";
+      produtos.filter(p=>p.categoria===cat && (p.subcategorias||[]).includes(sub))
+              .forEach(p=>resultados.appendChild(criarCard(p)));
+    };
+    subDiv.appendChild(btn);
+  });
+  li.appendChild(a); li.appendChild(subDiv); menuUl.appendChild(li);
+});
+
+// Menu responsivo
+document.getElementById("menu-btn").onclick = () => {
+  menuUl.classList.toggle("open");
+  document.getElementById("menu-btn").textContent = menuUl.classList.contains('open') ? '✖' : '☰';
+};
+
+// Pesquisa
+document.getElementById("pesquisa").addEventListener("input", e => {
+  const val = e.target.value.toLowerCase();
+  resultados.style.display = val ? "flex" : "none";
+  resultados.innerHTML = "";
+  produtos.filter(p =>
+    p.nome.toLowerCase().includes(val) ||
+    (p.subcategorias||[]).some(s=>s.toLowerCase().includes(val)) ||
+    p.categoria.toLowerCase().includes(val)
+  ).forEach(p => resultados.appendChild(criarCard(p)));
+});
+
+
+const bannerImg = document.getElementById("banner-img");
+const bannerText = document.getElementById("banner-text");
+
+const banners = [
+  {img:"f/ban.jpg", texto:"Promoções Especiais"},
+  {img:"f/ban2.jpg", texto:"Novidades em Tênis"},
+  {img:"f/ban3.jpg", texto:"Relógios de Luxo"},
+  {img:"f/ban4.jpg", texto:"Mochilas Modernas"},
+];
+
+let bannerIndex = 0;
+
+function trocarBanner() {
+  // Fade out
+  bannerImg.style.opacity = 0;
+  setTimeout(() => {
+    // Troca a imagem e o texto
+    bannerIndex = (bannerIndex + 1) % banners.length;
+    bannerImg.src = banners[bannerIndex].img;
+    bannerText.textContent = banners[bannerIndex].texto;
+    // Fade in
+    bannerImg.style.opacity = 1;
+  }, 500); // meio segundo de fade
+}
+
+// Define a transição no CSS via JS (caso ainda não tenha)
+bannerImg.style.transition = "opacity 0.5s";
+
+// Troca automática a cada 5 segundos
+setInterval(trocarBanner, 5000);
+
+
+
+</script>
+</body>
+</html>
+
